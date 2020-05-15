@@ -1,0 +1,142 @@
+<html lang="es">
+	<head>
+		<meta charset="utf-8">
+		<title>Juego de Memoria</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />
+		<style>
+			.curpointer{
+				cursor: pointer !important;
+			}
+			.table-bordered td{
+				border: 10px solid #dee2e6 !important;
+			}
+			.table td{
+				padding: 0px;
+			}
+		</style>
+	</head>
+	<body>
+		<div clasa="container">
+			<div class="col-sm-12 text-center pt-3">
+				<h3>Bienvenidos a este juego de memoria</h3>
+			</div>
+			<div class="col-sm-12">
+				<h4>Por favor, selecciona el tamaño del juego</h4>
+				<div class="row">
+					<div class="col-sm-3">
+						<select id="sizeGame" class="form-control form-control-sm">
+							<!-- <option value="0"> - Seleccione - </option> -->
+							<option value="2"> 2x2 </option>
+							<option value="4"> 4x4 </option>
+							<option value="6"> 6x6 </option>
+						</select>
+					</div>
+					<div class="col-sm-3">
+						<a class="btn btn-sm btn-info" id="starGame"> Jugar </a>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-12 pt-3 d-none table-responsive" id="BoardGame">
+				<table class="table table-bordered table-responsive" id="">
+					<tbody id="tableGame">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	
+	<script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha256-3blsJd4Hli/7wCQ+bmgXfOdK7p/ZUMtPXY08jmxSSgk=" crossorigin="anonymous"></script>
+	<script>
+		var Vavaible = new Array();
+		var CurrentSelec = 0;
+		var CurrentDir = 0;
+		var LastSelec = 0;
+		var LastDir = 0;
+		var cont = 0;
+		$(document).ready(function(){
+			$("#starGame").click(function(){
+				var valorgame = $("#sizeGame").val();
+				if(valorgame == 0){
+					$("#BoardGame").addClass("d-none");
+					toastr.warning("Debes seleccionar un tamaño válido", "Notificación")
+				}
+				else{
+					Vavaible = new Array();
+					generateValues(valorgame);
+					createTableGame(valorgame);
+					$("#BoardGame").removeClass("d-none");
+				}
+			})
+			$(document).on('click', '.cardGame', function(){
+				var valu= $(this).data("value")
+				var _this = $(this);
+				if(!$.isNumeric(_this.html())){
+					cont++;
+					CurrentSelec = parseInt(valu);
+					CurrentDir = _this.data("idcard");
+					_this.html(valu).removeClass("bg-danger").addClass("bg-info");
+					if(LastSelec != CurrentSelec){
+						if(cont == 1){
+							LastSelec = valu;
+							LastDir = _this.data("idcard");
+						}
+						setTimeout(function(){
+							if(cont == 2){
+								cont = 0;
+								CurrentSelec = 0;
+								LastSelec = 0;
+								$("#"+CurrentDir).removeClass("bg-info").addClass("bg-danger").html("Card");
+								$("#"+LastDir).removeClass("bg-info").addClass("bg-danger").html("Card");
+							}
+						},500)
+					}
+					else{
+						cont = 0;
+					}
+				}
+			})
+		})
+		function pad (str, max = 4) {
+			str = str.toString();
+			return str.length < max ? pad("0" + str, max) : str;
+		}
+		
+		function randomNumber(min = 1, max = 99) {  
+			return Math.floor(Math.random() * (max - min) + min);
+		}
+		
+		function generateValues (psize){
+			psize = (psize*psize)/2;
+			for(i = 0 ; i < psize; i++){
+				goojs = randomNumber();
+				Vavaible.push(goojs)
+				Vavaible.push(goojs)
+			}
+			
+		}
+		
+		function createTableGame(psize){
+			$("#tableGame").html("");
+			var vhtml ='';
+			var vandom = psize *psize;
+			psize++;
+			for(i = 1; i < psize; i++){
+				vhtml += '<tr>';
+				for(j = 1; j < psize; j++){
+					vhtml += '<td id="'+psize+'-'+i+'-'+j+'">';
+					gfo = randomNumber(1,vandom-1)
+						vhtml += '<h1 class="bg-danger text-white p-4 text-center cardGame curpointer" data-value="'+pad(Vavaible[gfo])+'" id="card_'+i+'_'+j+'" data-idcard="card_'+i+'_'+j+'" style="">Card</h1>';
+					vhtml += '</td>';
+					Vavaible.splice(gfo,1);
+					vandom--;
+				}
+				vhtml += '</tr>';
+				$("#tableGame").append(vhtml);
+				vhtml = "";
+			}
+		}
+	</script>
+	</body>
+<html>
